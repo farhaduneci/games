@@ -40,20 +40,28 @@
         description: "Learn Turkish numbers 1–100. Type the number you hear, beat your streak.",
         path: "/html/turkish-numbers.html",
         tags: ["language", "typing"]
+      },
+      {
+        title: "504 CLI",
+        description: "Terminal flashcard game for the 504 Absolutely Essential Words vocabulary book.",
+        href: "https://github.com/farhaduneci/504-cli",
+        tags: ["cli", "language", "vocabulary"]
       }
     ];
 
     // Render games into #games-grid
     const grid = document.getElementById('games-grid');
     games.forEach(g => {
+      const external = !!g.href;
       const a = document.createElement('a');
-      a.href = g.path;
+      a.href = g.href || g.path;
       a.className = [
         'group relative flex flex-col gap-3 p-5 rounded-lg',
         'bg-(--surface) border border-(--border)',
         'hover:bg-(--surface-hover) hover:border-(--accent)',
         'transition-colors'
       ].join(' ');
+      if (external) { a.target = '_blank'; a.rel = 'noopener'; }
 
       const top = document.createElement('div');
       top.className = 'flex items-start justify-between gap-2';
@@ -64,7 +72,7 @@
 
       const arrow = document.createElement('span');
       arrow.className = 'text-(--muted) text-sm shrink-0 mt-px';
-      arrow.textContent = '→';
+      arrow.textContent = external ? '↗' : '→';
 
       top.appendChild(title);
       top.appendChild(arrow);
