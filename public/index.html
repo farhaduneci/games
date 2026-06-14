@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>games — farhaduneci</title>
+  <meta name="description" content="Browser experiments and mini games by Farhad Uneci." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="min-h-dvh bg-(--bg) font-mono flex flex-col">
+  <div class="max-w-3xl mx-auto px-6 py-16 w-full flex flex-col flex-1">
+
+    <header class="mb-10">
+      <h1 class="text-4xl font-medium text-(--accent) tracking-tight mb-2">Games 👾</h1>
+      <p class="text-sm text-(--muted)">browser experiments &amp; mini games</p>
+      <hr class="border-t border-(--border) mt-6" />
+    </header>
+
+    <main>
+      <div id="games-grid" class="grid grid-cols-1 gap-4 sm:grid-cols-2"></div>
+    </main>
+
+    <footer class="mt-16 text-xs text-(--muted) text-center">
+      &copy; <span id="year"></span> Farhad Uneci
+    </footer>
+
+  </div>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Games data — add new entries here when adding html files to public/html/
+    const games = [
+      {
+        title: "Sayılar",
+        description: "Learn Turkish numbers 1–100. Type the number you hear, beat your streak.",
+        path: "/html/turkish-numbers.html",
+        tags: ["language", "typing"]
+      }
+    ];
+
+    // Render games into #games-grid
+    const grid = document.getElementById('games-grid');
+    games.forEach(g => {
+      const a = document.createElement('a');
+      a.href = g.path;
+      a.className = [
+        'group relative flex flex-col gap-3 p-5 rounded-lg',
+        'bg-(--surface) border border-(--border)',
+        'hover:bg-(--surface-hover) hover:border-(--accent)',
+        'transition-colors'
+      ].join(' ');
+
+      const top = document.createElement('div');
+      top.className = 'flex items-start justify-between gap-2';
+
+      const title = document.createElement('span');
+      title.className = 'text-(--text) font-medium text-sm leading-snug';
+      title.textContent = g.title;
+
+      const arrow = document.createElement('span');
+      arrow.className = 'text-(--muted) text-sm shrink-0 mt-px';
+      arrow.textContent = '→';
+
+      top.appendChild(title);
+      top.appendChild(arrow);
+
+      const desc = document.createElement('p');
+      desc.className = 'text-(--muted) text-xs leading-relaxed';
+      desc.textContent = g.description;
+
+      const tagRow = document.createElement('div');
+      tagRow.className = 'flex flex-wrap gap-1.5 mt-auto';
+      g.tags.forEach(tag => {
+        const pill = document.createElement('span');
+        pill.className = 'border border-(--border) text-(--muted) text-xs px-2 py-0.5 rounded-full';
+        pill.textContent = tag;
+        tagRow.appendChild(pill);
+      });
+
+      a.appendChild(top);
+      a.appendChild(desc);
+      a.appendChild(tagRow);
+      grid.appendChild(a);
+    });
+  </script>
+</body>
+</html>

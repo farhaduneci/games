@@ -1,0 +1,51 @@
+games.farhaduneci.com
+====================
+
+A collection of browser-based games and HTML experiments by Farhad Uneci.
+
+Hosted on Cloudflare Workers at https://games.farhaduneci.com
+
+
+Structure
+---------
+
+  public/             Static assets served by Cloudflare
+    index.html        Games listing page (the homepage)
+    styles.css        Compiled Tailwind CSS (do not edit directly)
+    html/             Individual game files — one HTML per game
+
+  src/
+    input.css         Tailwind v4 source (compiled to public/styles.css)
+
+  wrangler.jsonc      Cloudflare Workers config
+  package.json        Dev dependencies (Tailwind, Wrangler)
+
+
+Development
+-----------
+
+  npm install
+  npx wrangler dev          # local preview at http://localhost:8787
+  npx wrangler deploy       # deploy to Cloudflare
+
+
+Adding a game
+-------------
+
+1. Put the standalone HTML file in public/html/
+2. Add an entry for it in public/index.html (games array in the inline script)
+3. Deploy
+
+
+Tech
+----
+
+  - Cloudflare Workers (static assets mode)
+  - Tailwind CSS v4
+  - Vanilla HTML/JS — no framework
+
+
+License
+-------
+
+MIT. See LICENSE.

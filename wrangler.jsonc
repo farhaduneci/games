@@ -1,0 +1,11 @@
+{
+    "$schema": "./node_modules/wrangler/config-schema.json",
+    "name": "games-farhaduneci",
+    "compatibility_date": "2026-06-05",
+    "assets": {
+        "directory": "./public",
+    },
+    "build": {
+        "command": "npx tailwindcss -i ./src/input.css -o ./public/styles.css --minify",
+    },
+}

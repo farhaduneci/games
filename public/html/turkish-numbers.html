@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Sayılar</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #0a0a0a;
+  --surface:  #111;
+  --line:     #1e1e1e;
+  --line2:    #2a2a2a;
+  --text:     #e8e8e8;
+  --sub:      #666;
+  --sub2:     #3a3a3a;
+  --ok:       #4a9e5c;
+  --ok-bg:    rgba(74,158,92,0.08);
+  --err:      #9e4a4a;
+  --err-bg:   rgba(158,74,74,0.08);
+  --sans: 'Inter', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+
+html { height: 100%; }
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100%;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* safe area for notched phones */
+  padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+}
+
+/* ── Wrapper ── */
+.wrap {
+  width: 100%;
+  max-width: 480px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 20px 32px;
+}
+
+/* ── Header ── */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+.logo {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--sub);
+  text-transform: uppercase;
+}
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.streak {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--sub);
+}
+.streak b { color: var(--text); font-weight: 600; }
+.cheat-btn {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--sub);
+  background: none;
+  border: 1px solid var(--line2);
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.15s, color 0.15s;
+}
+.cheat-btn:hover, .cheat-btn:active { border-color: var(--sub); color: var(--text); }
+
+/* ── Level row ── */
+.level-row { margin-bottom: 18px; }
+.level-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.level-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sub);
+}
+.level-xp {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--sub2);
+}
+.xp-track { height: 2px; background: var(--line); border-radius: 1px; }
+.xp-fill {
+  height: 100%;
+  background: var(--text);
+  border-radius: 1px;
+  transition: width 0.5s ease;
+}
+
+/* ── Mode tabs ── */
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 20px;
+}
+.tab {
+  padding: 10px 4px;
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--sub);
+  font-family: var(--sans);
+  font-size: 0.7rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.12s;
+  -webkit-tap-highlight-color: transparent;
+  /* big tap target */
+  min-height: 42px;
+}
+.tab:active { background: var(--line); }
+.tab.active {
+  border-color: var(--text);
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ── Question card ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 32px 24px 28px;
+  text-align: center;
+  margin-bottom: 14px;
+  flex-shrink: 0;
+}
+.q-dir {
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sub);
+  margin-bottom: 16px;
+}
+.q-main {
+  font-family: var(--mono);
+  font-size: clamp(2rem, 10vw, 3rem);
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text);
+  word-break: break-word;
+  margin-bottom: 8px;
+}
+.q-hint {
+  font-size: 0.7rem;
+  color: var(--sub);
+  font-style: italic;
+  min-height: 1.1em;
+}
+
+/* ── Options ── */
+.options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.opt {
+  padding: 0 12px;
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 0.84rem;
+  font-weight: 400;
+  line-height: 1.35;
+  text-align: center;
+  cursor: pointer;
+  word-break: break-word;
+  transition: border-color 0.1s, background 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+.opt:active:not(.locked) { background: var(--line); }
+.opt:hover:not(.locked)  { border-color: var(--line2); }
+.opt.correct { background: var(--ok-bg);  border-color: var(--ok);  color: #6ec97e; }
+.opt.wrong   { background: var(--err-bg); border-color: var(--err); color: #c97e6e; }
+.opt.reveal  { background: var(--ok-bg);  border-color: var(--ok);  color: #6ec97e; }
+.opt.locked  { cursor: default; }
+
+/* ── Feedback ── */
+.feedback {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--sub);
+  text-align: center;
+  min-height: 22px;
+  margin-bottom: 10px;
+}
+.feedback.ok  { color: var(--ok); }
+.feedback.err { color: var(--err); }
+
+/* ── Next button ── */
+.next-btn {
+  width: 100%;
+  padding: 16px;
+  background: var(--text);
+  color: var(--bg);
+  border: none;
+  border-radius: 8px;
+  font-family: var(--sans);
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  display: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.15s;
+}
+.next-btn:active { opacity: 0.8; }
+
+/* ── Stats ── */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border-top: 1px solid var(--line);
+  margin-top: auto;
+  padding-top: 20px;
+}
+.stat { text-align: center; }
+.stat-val {
+  font-family: var(--mono);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.stat-lbl {
+  font-size: 0.58rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sub);
+  margin-top: 3px;
+}
+
+/* ── Overlays shared ── */
+.overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(10,10,10,0.97);
+}
+.overlay.show { display: flex; }
+
+/* ── Cheat sheet ── */
+#cheatOverlay {
+  flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0;
+}
+.cheat-wrap {
+  max-width: 480px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px 20px 48px;
+}
+.cheat-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  position: sticky;
+  top: 0;
+  background: rgba(10,10,10,0.97);
+  padding: 20px 0 16px;
+  backdrop-filter: blur(8px);
+  margin-top: -20px;
+}
+.cheat-title {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--sub);
+}
+.close-btn {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--sub);
+  background: none;
+  border: 1px solid var(--line2);
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 36px;
+}
+.close-btn:active { background: var(--line); }
+
+.cs { margin-bottom: 28px; }
+.cs-title {
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--sub);
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 10px;
+}
+.cs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 5px;
+}
+.cs-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 7px 10px;
+  gap: 8px;
+}
+.cs-n {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--sub);
+  white-space: nowrap;
+}
+.cs-w {
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  color: var(--text);
+  text-align: right;
+  word-break: break-word;
+}
+.rule {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 12px 14px;
+  margin-bottom: 6px;
+}
+.rule-t {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sub);
+  margin-bottom: 7px;
+}
+.rule-b {
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  color: var(--text);
+  line-height: 1.85;
+}
+.rule-b .ex { color: var(--sub); font-size: 0.7rem; }
+
+/* ── Level-up overlay ── */
+#lvlOverlay {
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+  text-align: center;
+  padding: 32px;
+}
+.lu-eyebrow {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--sub);
+}
+.lu-num {
+  font-family: var(--mono);
+  font-size: 5rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1;
+  animation: pop 0.35s cubic-bezier(0.34,1.56,0.64,1);
+}
+.lu-name { font-size: 1.3rem; font-weight: 600; margin-bottom: 4px; }
+.lu-desc { font-size: 0.78rem; color: var(--sub); margin-bottom: 20px; }
+.lu-btn {
+  padding: 14px 40px;
+  background: var(--text);
+  color: var(--bg);
+  border: none;
+  border-radius: 8px;
+  font-family: var(--sans);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@keyframes pop {
+  from { transform: scale(0.5); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+/* ── Flashcard reveal ── */
+.card.waiting {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.card.waiting:active { opacity: 0.75; }
+.tap-hint {
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sub2);
+  margin-top: 18px;
+  transition: opacity 0.2s;
+}
+.options.hidden { visibility: hidden; pointer-events: none; }
+
+/* ── Larger screens: center everything nicely ── */
+@media (min-width: 600px) {
+  body { justify-content: center; padding: 40px 24px; }
+  .wrap { padding: 32px 32px 40px; border: 1px solid var(--line); border-radius: 14px; min-height: unset; }
+  .opt { min-height: 54px; font-size: 0.86rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <span class="logo">Sayılar</span>
+    <div class="header-right">
+      <span class="streak">🔥 <b id="streakVal">0</b></span>
+      <button class="cheat-btn" onclick="openCheat()">cheat sheet</button>
+    </div>
+  </header>
+
+  <div class="level-row">
+    <div class="level-meta">
+      <span class="level-label" id="levelName">Level 1 — Beginner</span>
+      <span class="level-xp" id="levelXp">0 / 20 xp</span>
+    </div>
+    <div class="xp-track"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-num2tr" onclick="setMode('num2tr')">123 → TR</button>
+    <button class="tab"        id="tab-tr2num" onclick="setMode('tr2num')">TR → 123</button>
+    <button class="tab"        id="tab-mixed"  onclick="setMode('mixed')">Mixed</button>
+  </div>
+
+  <div class="card" id="card">
+    <div class="q-dir"  id="qDir">What is this in Turkish?</div>
+    <div class="q-main" id="qMain">—</div>
+    <div class="q-hint" id="qHint"></div>
+    <div class="tap-hint" id="tapHint">tap to reveal options</div>
+  </div>
+
+  <div class="options" id="opts"></div>
+  <div class="feedback" id="fb"></div>
+  <button class="next-btn" id="nextBtn" onclick="next()">Next →</button>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-val" id="sTotal">0</div><div class="stat-lbl">Done</div></div>
+    <div class="stat"><div class="stat-val" id="sCorrect">0</div><div class="stat-lbl">Correct</div></div>
+    <div class="stat"><div class="stat-val" id="sAcc">—</div><div class="stat-lbl">Accuracy</div></div>
+    <div class="stat"><div class="stat-val" id="sXp">0</div><div class="stat-lbl">XP</div></div>
+  </div>
+</div>
+<footer style="text-align:center;padding:2rem 0 1.5rem;font-size:0.7rem;color:var(--sub);">
+  &copy; <span id="footerYear"></span> Farhad Uneci
+</footer>
+<script>document.getElementById('footerYear').textContent=new Date().getFullYear();</script>
+
+<!-- Cheat sheet -->
+<div class="overlay" id="cheatOverlay">
+  <div class="cheat-wrap">
+    <div class="cheat-head">
+      <span class="cheat-title">Cheat Sheet</span>
+      <button class="close-btn" onclick="closeCheat()">✕ close</button>
+    </div>
+
+    <div class="cs">
+      <div class="cs-title">0 – 10</div>
+      <div class="cs-grid">
+        <div class="cs-row"><span class="cs-n">0</span><span class="cs-w">sıfır</span></div>
+        <div class="cs-row"><span class="cs-n">1</span><span class="cs-w">bir</span></div>
+        <div class="cs-row"><span class="cs-n">2</span><span class="cs-w">iki</span></div>
+        <div class="cs-row"><span class="cs-n">3</span><span class="cs-w">üç</span></div>
+        <div class="cs-row"><span class="cs-n">4</span><span class="cs-w">dört</span></div>
+        <div class="cs-row"><span class="cs-n">5</span><span class="cs-w">beş</span></div>
+        <div class="cs-row"><span class="cs-n">6</span><span class="cs-w">altı</span></div>
+        <div class="cs-row"><span class="cs-n">7</span><span class="cs-w">yedi</span></div>
+        <div class="cs-row"><span class="cs-n">8</span><span class="cs-w">sekiz</span></div>
+        <div class="cs-row"><span class="cs-n">9</span><span class="cs-w">dokuz</span></div>
+        <div class="cs-row"><span class="cs-n">10</span><span class="cs-w">on</span></div>
+      </div>
+    </div>
+
+    <div class="cs">
+      <div class="cs-title">Tens</div>
+      <div class="cs-grid">
+        <div class="cs-row"><span class="cs-n">10</span><span class="cs-w">on</span></div>
+        <div class="cs-row"><span class="cs-n">20</span><span class="cs-w">yirmi</span></div>
+        <div class="cs-row"><span class="cs-n">30</span><span class="cs-w">otuz</span></div>
+        <div class="cs-row"><span class="cs-n">40</span><span class="cs-w">kırk</span></div>
+        <div class="cs-row"><span class="cs-n">50</span><span class="cs-w">elli</span></div>
+        <div class="cs-row"><span class="cs-n">60</span><span class="cs-w">altmış</span></div>
+        <div class="cs-row"><span class="cs-n">70</span><span class="cs-w">yetmiş</span></div>
+        <div class="cs-row"><span class="cs-n">80</span><span class="cs-w">seksen</span></div>
+        <div class="cs-row"><span class="cs-n">90</span><span class="cs-w">doksan</span></div>
+      </div>
+    </div>
+
+    <div class="cs">
+      <div class="cs-title">Powers</div>
+      <div class="cs-grid">
+        <div class="cs-row"><span class="cs-n">100</span><span class="cs-w">yüz</span></div>
+        <div class="cs-row"><span class="cs-n">1,000</span><span class="cs-w">bin</span></div>
+        <div class="cs-row"><span class="cs-n">1,000,000</span><span class="cs-w">milyon</span></div>
+        <div class="cs-row"><span class="cs-n">1,000,000,000</span><span class="cs-w">milyar</span></div>
+      </div>
+    </div>
+
+    <div class="cs">
+      <div class="cs-title">Rules</div>
+      <div class="rule">
+        <div class="rule-t">Concatenate — no "and"</div>
+        <div class="rule-b">
+          Largest unit first, just place in order.<br>
+          <span class="ex">25 → yirmi beş</span><br>
+          <span class="ex">347 → üç yüz kırk yedi</span><br>
+          <span class="ex">1999 → bin dokuz yüz doksan dokuz</span>
+        </div>
+      </div>
+      <div class="rule">
+        <div class="rule-t">100 and 1,000 drop "bir"</div>
+        <div class="rule-b">
+          100 = yüz &nbsp;(not bir yüz)<br>
+          1,000 = bin &nbsp;(not bir bin)<br>
+          <span class="ex">200 = iki yüz &nbsp;|&nbsp; 3,000 = üç bin</span>
+        </div>
+      </div>
+      <div class="rule">
+        <div class="rule-t">Ordinals — vowel harmony</div>
+        <div class="rule-b">
+          Suffix depends on last vowel in word:<br>
+          <span class="ex">a / ı → ıncı &nbsp;&nbsp; e / i → inci</span><br>
+          <span class="ex">o / u → uncu &nbsp;&nbsp; ö / ü → üncü</span><br>
+          <span class="ex">1. birinci &nbsp; 3. üçüncü &nbsp; 5. beşinci</span>
+        </div>
+      </div>
+      <div class="rule">
+        <div class="rule-t">Quick examples</div>
+        <div class="rule-b">
+          <span class="ex">11 = on bir &nbsp;|&nbsp; 99 = doksan dokuz</span><br>
+          <span class="ex">101 = yüz bir &nbsp;|&nbsp; 500 = beş yüz</span><br>
+          <span class="ex">2,000 = iki bin &nbsp;|&nbsp; 1,001 = bin bir</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Level-up overlay -->
+<div class="overlay" id="lvlOverlay">
+  <div class="lu-eyebrow">Level up</div>
+  <div class="lu-num" id="luNum">2</div>
+  <div class="lu-name" id="luName">Elementary</div>
+  <div class="lu-desc" id="luDesc">Numbers up to 999 unlocked</div>
+  <button class="lu-btn" onclick="dismissLevelUp()">Devam et →</button>
+</div>
+
+<script>
+const LEVELS = [
+  { n:1, name:'Beginner',     desc:'0 – 20',                   xpNeeded:20,     maxNum:20,      allowOrdinal:false },
+  { n:2, name:'Elementary',   desc:'Numbers up to 999',        xpNeeded:40,     maxNum:999,     allowOrdinal:false },
+  { n:3, name:'Intermediate', desc:'Up to 9,999 + ordinals',   xpNeeded:80,     maxNum:9999,    allowOrdinal:true  },
+  { n:4, name:'Advanced',     desc:'Up to 999,999',            xpNeeded:150,    maxNum:999999,  allowOrdinal:true  },
+  { n:5, name:'Expert',       desc:'Millions + all types',     xpNeeded:999999, maxNum:9999999, allowOrdinal:true  },
+];
+
+const ONES = ['','bir','iki','üç','dört','beş','altı','yedi','sekiz','dokuz'];
+const TENS = ['','on','yirmi','otuz','kırk','elli','altmış','yetmiş','seksen','doksan'];
+
+function toTR(n) {
+  if (n === 0) return 'sıfır';
+  let r = '';
+  if (n >= 1000000) { const m = Math.floor(n/1000000); r += (m===1?'bir ':toTR(m)+' ')+'milyon '; n%=1000000; }
+  if (n >= 1000)    { const t = Math.floor(n/1000);    r += (t===1?'':toTR(t)+' ')+'bin ';    n%=1000; }
+  if (n >= 100)     { const h = Math.floor(n/100);     r += (h===1?'':ONES[h]+' ')+'yüz ';    n%=100; }
+  if (n >= 10)      { r += TENS[Math.floor(n/10)]+' '; n%=10; }
+  if (n > 0)        { r += ONES[n]+' '; }
+  return r.trim();
+}
+
+function toOrdTR(n) {
+  const base = toTR(n);
+  const lastVowel = [...base].reverse().find(c => 'aeıioöuü'.includes(c));
+  const sfx = {a:'ıncı',e:'inci',ı:'ıncı',i:'inci',o:'uncu',ö:'üncü',u:'uncu',ü:'üncü'};
+  return base + (sfx[lastVowel] || 'ıncı');
+}
+
+let S = { mode:'num2tr', level:0, xp:0, streak:0, total:0, correct:0, answered:false, q:null };
+
+function ri(a,b) { return Math.floor(Math.random()*(b-a+1))+a; }
+
+function pickNum(lv) {
+  const max = LEVELS[lv].maxNum;
+  const buckets = [];
+  if (max>=20)      buckets.push(()=>ri(0,20));
+  if (max>=99)      buckets.push(()=>ri(21,99));
+  if (max>=999)     buckets.push(()=>ri(100,999));
+  if (max>=9999)    buckets.push(()=>ri(1000,9999));
+  if (max>=99999)   buckets.push(()=>ri(10000,99999));
+  if (max>=999999)  buckets.push(()=>ri(100000,999999));
+  if (max>=9999999) buckets.push(()=>ri(1000000,9999999));
+  return buckets[ri(0,buckets.length-1)]();
+}
+
+function makeQ() {
+  const lv = LEVELS[S.level];
+  const ord = lv.allowOrdinal && Math.random() < 0.15;
+  const num = pickNum(S.level);
+  let dir = S.mode === 'mixed' ? (Math.random()<0.5?'num2tr':'tr2num') : S.mode;
+
+  const tr = ord ? toOrdTR(num) : toTR(num);
+  const ns = String(num) + (ord ? '.' : '');
+
+  const wrongs = new Set();
+  while (wrongs.size < 3) { const w = pickNum(S.level); if (w !== num) wrongs.add(w); }
+  const wa = [...wrongs];
+
+  if (dir === 'num2tr') return {
+    dir: 'What is this in Turkish?', q: ns,
+    hint: ord ? 'ordinal — sıralama sayısı' : '',
+    correct: tr,
+    opts: shuffle([tr, ...wa.map(w => ord ? toOrdTR(w) : toTR(w))]),
+  };
+  return {
+    dir: 'Which number is this?', q: tr,
+    hint: ord ? 'ordinal number' : '',
+    correct: ns,
+    opts: shuffle([ns, ...wa.map(w => String(w)+(ord?'.':''))]),
+  };
+}
+
+function shuffle(a) { return [...a].sort(()=>Math.random()-0.5); }
+
+function render() {
+  const q = S.q;
+  $('qDir').textContent  = q.dir;
+  $('qMain').textContent = q.q;
+  $('qHint').textContent = q.hint;
+  $('fb').textContent = ''; $('fb').className = 'feedback';
+  $('nextBtn').style.display = 'none';
+  $('tapHint').style.display = 'block';
+  S.answered = false;
+  S.revealed = false;
+
+  // Hide options until tap
+  const c = $('opts');
+  c.innerHTML = '';
+  c.classList.add('hidden');
+  $('card').classList.add('waiting');
+
+  q.opts.forEach(o => {
+    const b = document.createElement('button');
+    b.className = 'opt'; b.textContent = o;
+    b.addEventListener('click', () => answer(b, o));
+    c.appendChild(b);
+  });
+}
+
+function revealOptions() {
+  if (S.revealed || S.answered) return;
+  S.revealed = true;
+  $('opts').classList.remove('hidden');
+  $('card').classList.remove('waiting');
+  $('tapHint').style.display = 'none';
+}
+
+function answer(btn, chosen) {
+  if (S.answered) return;
+  S.answered = true;
+  const ok = chosen === S.q.correct;
+
+  document.querySelectorAll('.opt').forEach(b => {
+    b.classList.add('locked');
+    if (b.textContent === S.q.correct) b.classList.add('reveal');
+  });
+
+  if (ok) {
+    btn.classList.add('correct'); btn.classList.remove('reveal');
+    S.correct++; S.streak++;
+    const xp = (S.level+1) + (S.streak>=5?2:S.streak>=3?1:0);
+    S.xp += xp;
+    fb('+ ' + xp + ' xp  ·  doğru', 'ok');
+  } else {
+    btn.classList.add('wrong');
+    S.streak = 0;
+    fb('✗  ' + S.q.correct, 'err');
+  }
+  S.total++;
+  sync();
+  checkLevelUp();
+  $('nextBtn').style.display = 'block';
+}
+
+function fb(msg, cls) { const el=$('fb'); el.textContent=msg; el.className='feedback '+(cls||''); }
+
+function next() { S.q = makeQ(); render(); }
+
+function sync() {
+  $('streakVal').textContent = S.streak;
+  $('sTotal').textContent    = S.total;
+  $('sCorrect').textContent  = S.correct;
+  $('sAcc').textContent      = S.total > 0 ? Math.round(S.correct/S.total*100)+'%' : '—';
+  $('sXp').textContent       = S.xp;
+
+  const lv = LEVELS[S.level];
+  const prevXp = LEVELS.slice(0,S.level).reduce((s,l)=>s+l.xpNeeded,0);
+  const into = S.xp - prevXp;
+  const pct = Math.min(100, into / lv.xpNeeded * 100);
+  $('xpFill').style.width   = pct + '%';
+  $('levelName').textContent = 'Level ' + lv.n + ' — ' + lv.name;
+  $('levelXp').textContent   = into + ' / ' + lv.xpNeeded + ' xp';
+}
+
+function checkLevelUp() {
+  if (S.level >= LEVELS.length-1) return;
+  const needed = LEVELS.slice(0, S.level+1).reduce((s,l)=>s+l.xpNeeded, 0);
+  if (S.xp >= needed) {
+    S.level++;
+    const lv = LEVELS[S.level];
+    $('luNum').textContent  = lv.n;
+    $('luName').textContent = lv.name;
+    $('luDesc').textContent = lv.desc;
+    show('lvlOverlay'); sync();
+  }
+}
+
+function dismissLevelUp() { hide('lvlOverlay'); next(); }
+function openCheat()  { show('cheatOverlay'); }
+function closeCheat() { hide('cheatOverlay'); }
+
+function setMode(m) {
+  S.mode = m;
+  ['num2tr','tr2num','mixed'].forEach(id =>
+    $('tab-'+id).classList.toggle('active', id===m));
+  next();
+}
+
+function $(id) { return document.getElementById(id); }
+function show(id) { $(id).classList.add('show'); }
+function hide(id) { $(id).classList.remove('show'); }
+
+$('cheatOverlay').addEventListener('click', e => { if (e.target===$('cheatOverlay')) closeCheat(); });
+$('card').addEventListener('click', revealOptions);
+
+S.q = makeQ(); render(); sync();
+</script>
+</body>
+</html>
